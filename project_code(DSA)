@@ -1,0 +1,364 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+using namespace std;
+
+// Node structure
+struct Node {
+    int data;
+    Node *left, *right;
+    Node(int data) : data(data), left(nullptr), right(nullptr) {}
+};
+
+// Function to insert a node into a Binary Tree
+void insertBinaryTree(Node*& root, int data) {
+    if (root == nullptr) {
+        root = new Node(data);
+        return;
+    }
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node* temp = q.front();
+        q.pop();
+        if (!temp->left) {
+            temp->left = new Node(data);
+            break;
+        } else
+            q.push(temp->left);
+
+        if (!temp->right) {
+            temp->right = new Node(data);
+            break;
+        } else
+            q.push(temp->right);
+    }
+}
+
+// Preorder Traversal for Binary Tree
+void preorderBinaryTree(Node* root) {
+    if (root) {
+        cout << root->data << " ";
+        preorderBinaryTree(root->left);
+        preorderBinaryTree(root->right);
+    }
+}
+
+// Inorder traversal for Binary Tree (Sorted order)
+void inorderBinaryTree(Node* root) {
+    if (root) {
+        inorderBinaryTree(root->left); // Recurse on left subtree
+        cout << root->data << " "; // Visit the root
+        inorderBinaryTree(root->right); // Recurse on right subtree
+    }
+}
+
+// Postorder Traversal for Binary Tree
+void postorderBinaryTree(Node* root) {
+    if (root) {
+        postorderBinaryTree(root->left);
+        postorderBinaryTree(root->right);
+        cout << root->data << " ";
+    }
+}
+
+// Search in Binary Tree
+Node* searchBinaryTree(Node* root, int data) {
+    if (!root) return nullptr;
+    if (root->data == data) return root;
+    Node* leftSearch = searchBinaryTree(root->left, data);
+    if (leftSearch) return leftSearch;
+    return searchBinaryTree(root->right, data);
+}
+
+// Delete the deepest node
+void deleteDeepestNode(Node* root, Node* deepNode) {
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node* temp = q.front();
+        q.pop();
+        if (temp->left) {
+            if (temp->left == deepNode) {
+                delete temp->left;
+                temp->left = nullptr;
+                return;
+            }
+            q.push(temp->left);
+        }
+        if (temp->right) {
+            if (temp->right == deepNode) {
+                delete temp->right;
+                temp->right = nullptr;
+                return;
+            }
+            q.push(temp->right);
+        }
+    }
+}
+
+// Delete a node in Binary Tree
+void deleteNodeBinaryTree(Node*& root, int data) {
+    if (!root) return;
+    if (!root->left && !root->right) {
+        if (root->data == data) {
+            delete root;
+            root = nullptr;
+        }
+        return;
+    }
+    queue<Node*> q;
+    q.push(root);
+    Node* targetNode = nullptr;
+    Node* temp = nullptr;
+    while (!q.empty()) {
+        temp = q.front();
+        q.pop();
+        if (temp->data == data) targetNode = temp;
+        if (temp->left) q.push(temp->left);
+        if (temp->right) q.push(temp->right);
+    }
+    if (targetNode) {
+        targetNode->data = temp->data;
+        deleteDeepestNode(root, temp);
+    }
+}
+
+// Insert into Binary Search Tree
+void insertBST(Node*& root, int data) {
+    if (!root) {
+        root = new Node(data);
+        return;
+    }
+    if (data < root->data)
+        insertBST(root->left, data);
+    else
+        insertBST(root->right, data);
+}
+
+
+// Preorder Traversal for Binary Tree
+void preorderBST(Node* root) {
+    if (root) {
+        cout << root->data << " ";
+        preorderBST(root->left);
+        preorderBST(root->right);
+    }
+}
+
+// Inorder traversal for BST (Sorted order)
+void inorderBST(Node* root) {
+    if (root) {
+        inorderBST(root->left); // Recurse on left subtree
+        cout << root->data << " "; // Visit the root
+        inorderBST(root->right); // Recurse on right subtree
+    }
+}
+
+
+// Postorder Traversal for BST
+void postorderBST(Node* root) {
+    if (root) {
+        postorderBST(root->left);
+        postorderBST(root->right);
+        cout << root->data << " ";
+    }
+}
+
+// Search in BST
+Node* searchBST(Node* root, int data) {
+    if (!root || root->data == data) return root;
+    if (data < root->data)
+        return searchBST(root->left, data);
+    return searchBST(root->right, data);
+}
+
+// Delete a node in BST
+Node* deleteNodeBST(Node* root, int data) {
+    if (!root) return nullptr;
+    if (data < root->data)
+        root->left = deleteNodeBST(root->left, data);
+    else if (data > root->data)
+        root->right = deleteNodeBST(root->right, data);
+    else {
+        if (!root->left) {
+            Node* temp = root->right;
+            delete root;
+            return temp;
+        } else if (!root->right) {
+            Node* temp = root->left;
+            delete root;
+            return temp;
+        }
+        Node* successor = root->right;
+        while (successor->left) successor = successor->left;
+        root->data = successor->data;
+        root->right = deleteNodeBST(root->right, successor->data);
+    }
+    return root;
+}
+
+// Custom heapify function
+void heapify(vector<int>& arr, int n, int i) {
+    int largest = i; // Initialize largest as root
+    int left = 2 * i + 1; // Left child
+    int right = 2 * i + 2; // Right child
+
+    // If left child is larger than root
+    if (left < n && arr[left] > arr[largest])
+        largest = left;
+
+    // If right child is larger than largest so far
+    if (right < n && arr[right] > arr[largest])
+        largest = right;
+
+    // If largest is not root
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+
+        // Recursively heapify the affected subtree
+        heapify(arr, n, largest);
+    }
+}
+
+void buildHeap(vector<int>& arr) {
+    int n = arr.size();
+    // Index of the last non-leaf node
+    int startIdx = (n / 2) - 1;
+
+    // Perform reverse level order traversal
+    // from the last non-leaf node and heapify each node
+    for (int i = startIdx; i >= 0; i--) {
+        heapify(arr, n, i);
+    }
+}
+
+void heapifyOperations() {
+    vector<int> values;
+    int value;
+    cout << "Enter values to heapify (enter -1 to stop): ";
+    while (cin >> value && value != -1) {
+        values.push_back(value);
+    }
+
+    buildHeap(values);
+
+    cout << "Heapified array: ";
+    for (int v : values) {
+        cout << v << " ";
+    }
+    cout << endl;
+}
+
+// Min-Heap Operations
+void minHeapOperations() {
+    priority_queue<int, vector<int>, greater<int>> minHeap;
+    int value;
+    cout << "Enter values for Min-Heap (enter -1 to stop): ";
+    while (cin >> value && value != -1) {
+        minHeap.push(value);
+    }
+    cout << "Min-Heap elements: ";
+    while (!minHeap.empty()) {
+        cout << minHeap.top() << " ";
+        minHeap.pop();
+    }
+    cout << endl;
+}
+
+// Max-Heap Operations
+void maxHeapOperations() {
+    priority_queue<int> maxHeap;
+    int value;
+    cout << "Enter values for Max-Heap (enter -1 to stop): ";
+    while (cin >> value && value != -1) {
+        maxHeap.push(value);
+    }
+    cout << "Max-Heap elements: ";
+    while (!maxHeap.empty()) {
+        cout << maxHeap.top() << " ";
+        maxHeap.pop();
+    }
+    cout << endl;
+}
+
+int main() {
+    Node* binaryTreeRoot = nullptr;
+    Node* bstRoot = nullptr;
+    int input;
+
+    // Binary Tree Operations
+    cout << "Build your Binary Tree:\n";
+    while (cout << "Enter node data (-1 to stop): ", cin >> input, input != -1) {
+        insertBinaryTree(binaryTreeRoot, input);
+    }
+
+    cout << "In-order (Binary Tree): ";
+    inorderBinaryTree(binaryTreeRoot);
+    cout << endl;
+    cout << "Preorder (Binary Tree): ";
+    preorderBinaryTree(binaryTreeRoot);
+    cout << "\nPostorder (Binary Tree): ";
+    postorderBinaryTree(binaryTreeRoot);
+    cout << endl;
+
+    // Search for a value in the binary tree
+    cout << "Enter value to search in Binary Tree: ";
+    cin >> input;
+    Node* result = searchBinaryTree(binaryTreeRoot, input);
+    if (result) {
+        cout << "Value found in the Binary Tree!\n";
+    } else {
+        cout << "Value not found in the Binary Tree.\n";
+    }
+
+    // Delete a value from the binary tree
+    cout << "Enter value to delete from Binary Tree: ";
+    cin >> input;
+    deleteNodeBinaryTree(binaryTreeRoot, input);
+
+    cout << "Binary Tree after deletion: ";
+    preorderBinaryTree(binaryTreeRoot);
+    cout << endl;
+
+
+    // BST Operations
+    cout << "\nBuild your Binary Search Tree:\n";
+    while (cout << "Enter node data (-1 to stop): ", cin >> input, input != -1) {
+        insertBST(bstRoot, input);
+    }
+    cout << "Inorder (BST): ";
+    inorderBST(bstRoot);
+    cout << "\nPreorder (BST): ";
+    preorderBST(bstRoot);
+    cout << "\nPostorder (BST): ";
+    postorderBST(bstRoot);
+    cout << endl;
+
+     // Search for a value in the BST
+    cout << "Enter value to search in BST: ";
+    cin >> input;
+    result = searchBST(bstRoot, input);
+    if (result) {
+        cout << "Value found in the BST!\n";
+    } else {
+        cout << "Value not found in the BST.\n";
+    }
+
+    // Delete a value from the BST
+    cout << "Enter value to delete from BST: ";
+    cin >> input;
+    bstRoot = deleteNodeBST(bstRoot, input);
+    cout << "BST after deletion: ";
+    preorderBST(bstRoot);
+    cout << endl;
+
+
+    // heapify/Heap Operations
+    heapifyOperations();
+    minHeapOperations();
+    maxHeapOperations();
+
+    return 0;
+}
